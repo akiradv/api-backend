@@ -1,3 +1,27 @@
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
+
+import "./db.js";
+import authRoutes from "./routes/auth.js";
+import postRoutes from "./routes/posts.js";
+
+dotenv.config();
+
+const app = express();
+
+app.use(cors({
+  origin: "*",
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
+
+app.use(express.json());
+
+app.use("/auth", authRoutes);
+app.use("/posts", postRoutes);
+
+// STATUS REAL DA API
 app.get("/status", (req, res) => {
   res.json({
     status: "online",
@@ -7,6 +31,7 @@ app.get("/status", (req, res) => {
   });
 });
 
+// HOME BONITA E DINÂMICA
 app.get("/", (req, res) => {
   res.send(`
   <!DOCTYPE html>
@@ -113,4 +138,9 @@ app.get("/", (req, res) => {
   </body>
   </html>
   `);
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log("API rodando na porta " + PORT);
 });
