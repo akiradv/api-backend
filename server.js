@@ -31,6 +31,11 @@ app.get("/status", (req, res) => {
   });
 });
 
+app.get("/docs", (req, res) => {
+  res.send("<h1>Docs da Akira Core API</h1>");
+});
+
+
 // HOME BONITA E DINÂMICA
 app.get("/", (req, res) => {
   res.send(`
