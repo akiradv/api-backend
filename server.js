@@ -1,25 +1,11 @@
-import express from "express";
-import cors from "cors";
-import dotenv from "dotenv";
-
-import "./db.js";
-import authRoutes from "./routes/auth.js";
-import postRoutes from "./routes/posts.js";
-
-dotenv.config();
-
-const app = express();
-
-app.use(cors({
-  origin: "*",
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"]
-}));
-
-app.use(express.json());
-
-app.use("/auth", authRoutes);
-app.use("/posts", postRoutes);
+app.get("/status", (req, res) => {
+  res.json({
+    status: "online",
+    uptime: process.uptime(),
+    memory: process.memoryUsage().rss,
+    timestamp: Date.now()
+  });
+});
 
 app.get("/", (req, res) => {
   res.send(`
@@ -27,7 +13,7 @@ app.get("/", (req, res) => {
   <html lang="pt-br">
   <head>
     <meta charset="UTF-8">
-    <title>Akira API</title>
+    <title>Akira Core API</title>
     <style>
       body {
         font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -39,11 +25,12 @@ app.get("/", (req, res) => {
       .card {
         max-width: 900px;
         margin: auto;
-        background: rgba(255,255,255,0.05);
+        background: rgba(255,255,255,0.06);
         backdrop-filter: blur(12px);
-        border-radius: 16px;
-        padding: 24px;
-        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 18px;
+        padding: 28px;
+        border: 1px solid rgba(255,255,255,0.12);
+        box-shadow: 0 0 40px rgba(0,0,0,0.4);
       }
 
       h1 {
@@ -55,7 +42,7 @@ app.get("/", (req, res) => {
         display: inline-block;
         background: #22c55e;
         color: black;
-        padding: 4px 10px;
+        padding: 5px 12px;
         border-radius: 999px;
         font-weight: bold;
         font-size: 12px;
@@ -63,10 +50,10 @@ app.get("/", (req, res) => {
 
       code {
         background: rgba(255,255,255,0.08);
-        padding: 6px 10px;
-        border-radius: 8px;
+        padding: 8px 12px;
+        border-radius: 10px;
         display: block;
-        margin: 6px 0;
+        margin: 8px 0;
       }
 
       .footer {
@@ -74,35 +61,56 @@ app.get("/", (req, res) => {
         opacity: 0.6;
         font-size: 14px;
       }
+
+      .status {
+        margin-top: 12px;
+        font-weight: bold;
+      }
     </style>
   </head>
   <body>
     <div class="card">
       <span class="badge">ONLINE</span>
-      <h1>🚀 Akira API Backend</h1>
-      <p>Status: API rodando perfeitamente.</p>
+      <h1>🚀 Akira Core API</h1>
+      <p>Backend oficial da plataforma AkiraDev.</p>
 
-      <h3>📌 Endpoints disponíveis:</h3>
+      <div class="status" id="status">Carregando status...</div>
 
+      <h3>📌 Endpoints:</h3>
       <code>POST /auth/register</code>
       <code>POST /auth/login</code>
       <code>GET /posts</code>
       <code>POST /posts</code>
+      <code>GET /status</code>
 
-      <h3>🧠 Tecnologias:</h3>
+      <h3>🧠 Stack:</h3>
       <p>Node.js • Express • SQLite • JWT • Render</p>
 
       <div class="footer">
         Desenvolvido por <strong>AkiraDev</strong> — ${new Date().getFullYear()}
       </div>
     </div>
+
+    <script>
+      async function loadStatus() {
+        try {
+          const res = await fetch("/status");
+          const data = await res.json();
+
+          const uptime = Math.floor(data.uptime);
+          const memoryMB = Math.round(data.memory / 1024 / 1024);
+
+          document.getElementById("status").innerText =
+            "🟢 ONLINE • Uptime: " + uptime + "s • RAM: " + memoryMB + "MB";
+        } catch {
+          document.getElementById("status").innerText = "🔴 OFFLINE";
+        }
+      }
+
+      loadStatus();
+      setInterval(loadStatus, 3000);
+    </script>
   </body>
   </html>
   `);
-});
-
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log("API rodando na porta " + PORT);
 });
